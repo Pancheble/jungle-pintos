@@ -206,6 +206,10 @@ thread_create (const char *name, int priority,
 
 	/* Add to run queue. */
 	thread_unblock (t);
+	
+	if (thread_current()->priority < priority){
+		thread_yield(); // 양보는 t가 들어간 이후에 해야 함
+	}
 
 	return tid;
 }
@@ -313,6 +317,12 @@ thread_yield (void) {
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->priority = new_priority;
+	if (!list_empty(&ready_list)){
+		int first_list_priority = list_entry(list_front(&ready_list), struct thread, elem)->priority;
+		if (thread_current ()->priority < first_list_priority){
+			thread_yield();
+		}
+	}
 }
 
 /* Returns the current thread's priority. */
