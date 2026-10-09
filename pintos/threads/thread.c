@@ -603,6 +603,9 @@ cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNU
 	list_entry는 struct list_elem * -> list_elem을 포함하고 있는 구조체의 주소를 찾아주는 매크로
 	리스트를 순회하면
 	struct list elem *e를 얻음 => e의 주소가 아닌 e안의 struct thread 주소를 얻어야 함 
+	X가 새로 넣으려는 원소
+	y가 반복문을 돌며 비교하는 원소
+	x가 y보다 크면 True : 즉, x의 우선순위가 y보다 크기 때문에 y앞에 삽입
 	*/ 
 	int y_priority = list_entry(y, struct thread, elem)->priority;
 
