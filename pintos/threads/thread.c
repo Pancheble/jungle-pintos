@@ -63,6 +63,9 @@ static void do_schedule(int status);
 static void schedule (void);
 static tid_t allocate_tid (void);
 
+/* User Custom function*/
+static bool cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNUSED);
+
 /* Returns true if T appears to point to a valid thread. */
 #define is_thread(t) ((t) != NULL && (t)->magic == THREAD_MAGIC)
 
@@ -235,12 +238,12 @@ thread_block (void) {
 void
 thread_unblock (struct thread *t) {
 	enum intr_level old_level;
-
 	ASSERT (is_thread (t));
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem); 
+	list_insert_ordered(&ready_list, &t->elem, cmp_priority, NULL);
+	// list_push_back (&ready_list, &t->elem); 
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
@@ -303,7 +306,8 @@ thread_yield (void) {
 
 	old_level = intr_disable ();
 	if (curr != idle_thread)
-		list_push_back (&ready_list, &curr->elem);
+		list_insert_ordered(&ready_list, &curr->elem, cmp_priority, NULL);
+		// list_push_back (&ready_list, &curr->elem);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
 }
@@ -592,7 +596,7 @@ allocate_tid (void) {
 	return tid;
 }
 
-bool
+static bool
 cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNUSED){
 	int x_priority = list_entry(x, struct thread, elem)->priority; 
 	/*
