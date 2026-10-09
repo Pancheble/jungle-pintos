@@ -235,12 +235,12 @@ thread_block (void) {
 void
 thread_unblock (struct thread *t) {
 	enum intr_level old_level;
-
 	ASSERT (is_thread (t));
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem);
+	list_insert_ordered(&ready_list, &t->elem, cmp_priority, NULL);
+	// list_push_back (&ready_list, &t->elem); 
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
@@ -303,7 +303,8 @@ thread_yield (void) {
 
 	old_level = intr_disable ();
 	if (curr != idle_thread)
-		list_push_back (&ready_list, &curr->elem);
+		list_insert_ordered(&ready_list, &curr->elem, cmp_priority, NULL);
+		// list_push_back (&ready_list, &curr->elem);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
 }
@@ -323,6 +324,7 @@ thread_get_priority (void) {
 /* Sets the current thread's nice value to NICE. */
 void
 thread_set_nice (int nice UNUSED) {
+	/* 이 부분에서 구현해야하는 것은 CPU 양보하려는 정도 -> 이게 높으면 => 우선순위는 낮아짐*/
 	/* TODO: Your implementation goes here */
 }
 
@@ -336,6 +338,7 @@ thread_get_nice (void) {
 /* Returns 100 times the system load average. */
 int
 thread_get_load_avg (void) {
+	/* 시스템 전체 부하 측정*/
 	/* TODO: Your implementation goes here */
 	return 0;
 }
@@ -343,6 +346,7 @@ thread_get_load_avg (void) {
 /* Returns 100 times the current thread's recent_cpu value. */
 int
 thread_get_recent_cpu (void) {
+	/*최근 CPU 사용량*/
 	/* TODO: Your implementation goes here */
 	return 0;
 }
@@ -377,7 +381,7 @@ idle (void *idle_started_ UNUSED) {
 		   between re-enabling interrupts and waiting for the next
 		   one to occur, wasting as much as one clock tick worth of
 		   time.
-
+		   
 		   See [IA32-v2a] "HLT", [IA32-v2b] "STI", and [IA32-v3a]
 		   7.11.1 "HLT Instruction". */
 		asm volatile ("sti; hlt" : : : "memory");
@@ -587,4 +591,25 @@ allocate_tid (void) {
 	lock_release (&tid_lock);
 
 	return tid;
+}
+
+bool
+cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNUSED){
+	int x_priority = list_entry(x, struct thread, elem)->priority; 
+	/*
+	list_entry는 struct list_elem * -> list_elem을 포함하고 있는 구조체의 주소를 찾아주는 매크로
+	리스트를 순회하면
+	struct list elem *e를 얻음 => e의 주소가 아닌 e안의 struct thread 주소를 얻어야 함 
+	X가 새로 넣으려는 원소
+	y가 반복문을 돌며 비교하는 원소
+	x가 y보다 크면 True : 즉, x의 우선순위가 y보다 크기 때문에 y앞에 삽입
+	*/ 
+	int y_priority = list_entry(y, struct thread, elem)->priority;
+
+	if (x_priority > y_priority){
+		return true;
+	}
+	else{
+		return false;
+	}
 }
