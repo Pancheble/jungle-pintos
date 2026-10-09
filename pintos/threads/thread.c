@@ -73,6 +73,9 @@ static tid_t allocate_tid (void);
  * somewhere in the middle, this locates the curent thread. */
 #define running_thread() ((struct thread *) (pg_round_down (rrsp ())))
 
+// User Custom function
+void cmp_first_ready_list(int priority);
+
 
 // Global descriptor table for the thread_start.
 // Because the gdt will be setup after the thread_init, we should
@@ -318,10 +321,7 @@ void
 thread_set_priority (int new_priority) {
 	thread_current ()->priority = new_priority;
 	if (!list_empty(&ready_list)){
-		int first_list_priority = list_entry(list_front(&ready_list), struct thread, elem)->priority;
-		if (thread_current ()->priority < first_list_priority){
-			thread_yield();
-		}
+		cmp_first_ready_list(thread_current () -> priority);
 	}
 }
 
@@ -621,5 +621,14 @@ cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNU
 	}
 	else{
 		return false;
+	}
+}
+
+
+void
+cmp_first_ready_list(int priority){
+	int first_list_priority = list_entry(list_front(&ready_list), struct thread, elem)->priority;
+	if (thread_current ()->priority < first_list_priority){
+		thread_yield();
 	}
 }
