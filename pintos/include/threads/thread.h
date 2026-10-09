@@ -145,4 +145,5 @@ int thread_get_load_avg (void);
 void do_iret (struct intr_frame *tf);
 
 bool cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux);
+void cmp_first_ready_list(int priority);
 #endif /* threads/thread.h */
