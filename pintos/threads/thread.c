@@ -206,10 +206,8 @@ thread_create (const char *name, int priority,
 
 	/* Add to run queue. */
 	thread_unblock (t);
-	
-	if (thread_current()->priority < priority){
-		thread_yield(); // 양보는 t가 들어간 이후에 해야 함
-	}
+
+	cmp_first_ready_list(thread_current()->priority);
 
 	return tid;
 }
@@ -626,7 +624,11 @@ cmp_first_ready_list(int priority){
 		return ;
 	}
 	int first_list_priority = list_entry(list_front(&ready_list), struct thread, elem)->priority;
-	if (priority < first_list_priority){
-		thread_yield();
+	if (intr_context()){
+		intr_yield_on_return();
+	}else{
+		if (priority < first_list_priority){
+			thread_yield();
+		}
 	}
 }
