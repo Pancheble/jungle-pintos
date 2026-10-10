@@ -624,10 +624,10 @@ cmp_first_ready_list(int priority){
 		return ;
 	}
 	int first_list_priority = list_entry(list_front(&ready_list), struct thread, elem)->priority;
-	if (intr_context()){
-		intr_yield_on_return();
-	}else{
-		if (priority < first_list_priority){
+	if (priority < first_list_priority){
+		if (intr_context()){
+			intr_yield_on_return();
+		} else {
 			thread_yield();
 		}
 	}
