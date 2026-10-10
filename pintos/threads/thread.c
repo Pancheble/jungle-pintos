@@ -317,9 +317,7 @@ thread_yield (void) {
 void
 thread_set_priority (int new_priority) {
 	thread_current ()->priority = new_priority;
-	if (!list_empty(&ready_list)){
-		cmp_first_ready_list(thread_current () -> priority);
-	}
+	cmp_first_ready_list(thread_current () -> priority);
 }
 
 /* Returns the current thread's priority. */
@@ -624,8 +622,11 @@ cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNU
 
 void
 cmp_first_ready_list(int priority){
+	if (list_empty(&ready_list)){
+		return ;
+	}
 	int first_list_priority = list_entry(list_front(&ready_list), struct thread, elem)->priority;
-	if (thread_current ()->priority < first_list_priority){
+	if (priority < first_list_priority){
 		thread_yield();
 	}
 }
