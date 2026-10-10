@@ -620,6 +620,7 @@ cmp_priority(const struct list_elem *x, const struct list_elem *y, void *aux UNU
 
 void
 cmp_first_ready_list(int priority){
+	// list도 주소로 받아서 처리하기, element 구조체 타입도 받아서 넣기
 	if (list_empty(&ready_list)){
 		return ;
 	}
